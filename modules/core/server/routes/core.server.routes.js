@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function (app) {
+module.exports = function(app) {
   // Root routing
   var core = require('../controllers/core.server.controller');
 
@@ -12,4 +12,7 @@ module.exports = function (app) {
 
   // Define application route
   app.route('/*').get(core.renderIndex);
+
+  //Submit contact form data
+  app.route('/api/contact').post(core.contact);
 };

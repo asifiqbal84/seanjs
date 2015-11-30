@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('core').factory('authInterceptor', ['$q', '$injector',
-  function ($q, $injector) {
+  function($q, $injector) {
     return {
       responseError: function(rejection) {
         if (!rejection.config.ignoreAuthModule) {
@@ -11,6 +11,9 @@ angular.module('core').factory('authInterceptor', ['$q', '$injector',
               break;
             case 403:
               $injector.get('$state').transitionTo('forbidden');
+              break;
+            case 404:
+              $injector.get('$state').transitionTo('not-found');
               break;
           }
         }

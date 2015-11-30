@@ -20,40 +20,64 @@ exports.read = function(req, res) {
  * Update a User
  */
 exports.update = function(req, res) {
-  var user = req.model;
 
-  //For security purposes only merge these parameters
-  user.firstName = req.body.firstName;
-  user.lastName = req.body.lastName;
-  user.displayName = user.firstName + ' ' + user.lastName;
-  user.roles = req.body.roles;
+  User.find({
+    where: {
+      id: req.model.id
+    }
+  }).then(function(user) {
+    if (user) {
 
-  user.save(function(err) {
-    if (err) {
+      user.firstName = req.body.firstName;
+      user.lastName = req.body.lastName;
+      user.displayName = req.body.firstName + ' ' + req.body.lastName;
+      user.username = req.body.username;
+      user.email = req.body.email;
+      user.roles = req.body.roles;
+      user.updatedAt = Date.now();
+
+      user.save().then(function() {
+        res.json(user);
+      }).catch(function(err) {
+        res.status(400).send({
+          message: errorHandler.getErrorMessage(err)
+        });
+      });
+
+    } else {
       return res.status(400).send({
-        message: errorHandler.getErrorMessage(err)
+        message: 'Could not find user'
       });
     }
-
-    res.json(user);
+  }).catch(function(err) {
+    res.status(400).send({
+      message: errorHandler.getErrorMessage(err)
+    });
   });
+
 };
 
 /**
  * Delete a user
  */
 exports.delete = function(req, res) {
-  var user = req.model;
 
-  user.remove(function(err) {
-    if (err) {
-      return res.status(400).send({
-        message: errorHandler.getErrorMessage(err)
+  User.find({
+    where: {
+      id: req.model.id
+    }
+  }).then(function(user) {
+    if (user) {
+      user.destroy().then(function() {
+        return res.json(user);
+      }).catch(function(err) {
+        return res.status(400).send({
+          message: errorHandler.getErrorMessage(err)
+        });
       });
     }
-
-    res.json(user);
   });
+
 };
 
 /**
@@ -67,13 +91,12 @@ exports.list = function(req, res) {
   }).then(function(users) {
     if (!users) {
       return res.status(400).send({
-        message: errorHandler.getErrorMessage(err)
+        message: 'Unable to get list of users'
       });
     } else {
       res.json(users);
     }
   }).catch(function(err) {
-    console.log('err', err);
     res.jsonp(err);
   });
 };
@@ -92,21 +115,25 @@ exports.userByID = function(req, res, next, id) {
     if (!user) {
       return next(new Error('Failed to load user ' + id));
     } else {
-      req.model = user;
+
+      var data = {};
+
+      data.id = user.id;
+      data.firstName = user.firstName;
+      data.lastName = user.lastName;
+      data.displayName = user.displayName;
+      data.email = user.email;
+      data.username = user.username;
+      data.roles = user.roles;
+      data.provider = user.provider;
+      data.updatedAt = user.updatedAt;
+      data.createdAt = user.createdAt;
+
+      req.model = data;
       next();
     }
   }).catch(function(err) {
     return next(err);
   });
 
-  // User.findById(id, '-salt -password').exec(function(err, user) {
-  //   if (err) {
-  //     return next(err);
-  //   } else if (!user) {
-  //     return next(new Error('Failed to load user ' + id));
-  //   }
-
-  //   req.model = user;
-  //   next();
-  // });
 };

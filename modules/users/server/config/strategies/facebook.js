@@ -7,7 +7,7 @@ var passport = require('passport'),
   FacebookStrategy = require('passport-facebook').Strategy,
   users = require('../../controllers/user.server.controller');
 
-module.exports = function (config) {
+module.exports = function(config) {
   // Use facebook strategy
   passport.use(new FacebookStrategy({
       clientID: config.facebook.clientID,
@@ -16,7 +16,7 @@ module.exports = function (config) {
       profileFields: ['id', 'name', 'displayName', 'emails', 'photos'],
       passReqToCallback: true
     },
-    function (req, accessToken, refreshToken, profile, done) {
+    function(req, accessToken, refreshToken, profile, done) {
       // Set the provider data and include tokens
       var providerData = profile._json;
       providerData.accessToken = accessToken;
@@ -29,7 +29,7 @@ module.exports = function (config) {
         displayName: profile.displayName,
         email: profile.emails ? profile.emails[0].value : undefined,
         username: profile.username || generateUsername(profile),
-        profileImageURL: (profile.id) ? '//graph.facebook.com/' + profile.id + '/picture?type=large' : undefined,
+        profileImageURL: (profile.id) ? 'https://graph.facebook.com/' + profile.id + '/picture?type=large' : undefined,
         provider: 'facebook',
         providerIdentifierField: 'id',
         providerData: providerData

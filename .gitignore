@@ -15,6 +15,7 @@ app/tests/coverage/
 .bower-*/
 .idea/
 coverage/
+npm-debug.log
 
 # SEAN.JS app and assets
 # ======================
@@ -22,6 +23,9 @@ public/dist/
 public/uploads/users/profile/*
 config/env/local.js
 *.pem
+
+modules/users/server/controllers/users/local/*
+modules/users/server/models/local/*
 
 # Ignoring SEAN.JS Stack's gh-pages branch for documenation
 _site/
@@ -62,8 +66,6 @@ local.properties
 # Cloud9 IDE
 # =========
 .c9/
-data/
-mongod
 
 # Visual Studio
 # =========

@@ -14,12 +14,16 @@ angular.module('user').factory('User', ['$resource',
   }
 ]);
 
-//TODO this should be Users service
 angular.module('user.admin').factory('Admin', ['$resource',
   function($resource) {
-    return $resource('api/user/:userId', {
+    return $resource('api/admin/user/:userId', {
       userId: '@_id'
     }, {
+      query: {
+        method: 'GET',
+        params: {},
+        isArray: true
+      },
       update: {
         method: 'PUT'
       }

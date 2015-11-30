@@ -21,6 +21,7 @@ var config = require('../config'),
   http = require('http'),
   winston = require('./winston');
 
+
 /**
  * Initialize local variables
  */
@@ -37,14 +38,16 @@ module.exports.initLocalVariables = function(app) {
   app.locals.facebookAppId = config.facebook.clientID;
   app.locals.jsFiles = config.files.client.js;
   app.locals.cssFiles = config.files.client.css;
-  app.locals.livereload = config.livereload;
   app.locals.logo = config.logo;
   app.locals.favicon = config.favicon;
+  app.locals.usersProfileDir = config.app.usersProfileDir;
+  app.locals.reCaptchaSecret = config.app.reCaptchaSecret;
 
   // Passing the request url to environment locals
   app.use(function(req, res, next) {
     res.locals.host = req.protocol + '://' + req.hostname;
     res.locals.url = req.protocol + '://' + req.headers.host + req.originalUrl;
+    app.locals.originUrl = req.protocol + '://' + req.headers.host;
     next();
   });
 };
@@ -95,10 +98,26 @@ module.exports.initMiddleware = function(app) {
   app.use(flash());
 
   // Add multipart handling middleware
+  var storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+      cb(null, './public/uploads/users/profile');
+    },
+    filename: function(req, file, cb) {
+      var getFileExt = function(fileName) {
+        var fileExt = fileName.split(".");
+        if (fileExt.length === 1 || (fileExt[0] === "" && fileExt.length === 2)) {
+          return "";
+        }
+        return fileExt.pop();
+      };
+      cb(null, Date.now() + '.' + getFileExt(file.originalname));
+    }
+  });
+
   app.use(multer({
-    dest: './uploads/',
-    inMemory: true
-  }));
+    storage: storage
+  }).single('file'));
+
 };
 
 /**
@@ -127,14 +146,14 @@ module.exports.initSession = function(app, db) {
     cookie: {
       maxAge: config.sessionCookie.maxAge,
       httpOnly: config.sessionCookie.httpOnly,
-      secure: config.sessionCookie.secure && config.secure.ssl
+      secure: config.sessionCookie.secure && config.secure && config.secure.ssl
     },
     key: config.sessionKey,
     store: new RedisStore({
-      host: 'localhost',
-      port: 6379,
-      db: 0,
-      pass: ''
+      host: config.redis.host || 'localhost',
+      port: config.redis.port || 6379,
+      db: config.redis.database || 0,
+      pass: config.redis.password || ''
     })
   }));
 };
